@@ -81,6 +81,6 @@ class Server
 
         $result = $controller->execute();
 
-        echo json_encode($result, JSON_PRETTY_PRINT);
+        return json_encode($result);
     }
 }
