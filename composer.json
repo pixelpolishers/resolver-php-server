@@ -1,0 +1,27 @@
+{
+    "name": "pixelpolishers/resolver-php-server",
+    "description": "A PHP application to host Resolver packages.",
+    "homepage": "http://pixelpolishers.com/",
+    "type": "library",
+    "license": "MIT",
+    "authors": [{
+        "name": "Walter Tamboer",
+        "email": "walter@pixelpolishers.com",
+        "homepage": "http://www.pixelpolishers.com"
+    }],
+    "support": {
+        "irc": "irc://irc.freenode.org/pixelpolishers",
+        "issues": "https://github.com/pixelpolishers/resolver-php-server/issues"
+    },
+    "require": {
+        "php": ">=5.3.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
+    "autoload": {
+        "psr-0": {
+            "PixelPolishers\\Resolver": "src/"
+        }
+    }
+}
