@@ -77,6 +77,29 @@ class Pdo implements AdapterInterface
         return $result;
     }
 
+    public function findPackageByName($name)
+    {
+        $sql = "SELECT p.*
+                FROM " . $this->getTablePrefix() . "package AS p
+                WHERE p.fullname = :name";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':name', $name, \PDO::PARAM_STR);
+        $stmt->execute();
+
+        $obj = $stmt->fetch(\PDO::FETCH_OBJ);
+        if (!$obj) {
+            return null;
+        }
+
+        $result = new PdoPackage($this);
+        $result->setId($obj->id);
+        $result->setUserId($obj->user_id);
+        $result->setFullname($obj->fullname);
+        $result->setDescription($obj->description);
+        return $result;
+    }
+
     public function findVersionById($id)
     {
         $sql = "SELECT v.*

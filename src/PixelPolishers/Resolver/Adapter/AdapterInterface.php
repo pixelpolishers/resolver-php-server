@@ -12,6 +12,7 @@ interface AdapterInterface
 {
     public function findDependencies($versionId);
     public function findPackageById($id);
+    public function findPackageByName($name);
     public function findVersionById($id);
     public function findVersions($name);
 }
