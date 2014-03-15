@@ -13,6 +13,7 @@ use PixelPolishers\Resolver\Adapter\Pdo\Entity\PdoPackage;
 use PixelPolishers\Resolver\Adapter\Pdo\Entity\PdoPackageLink;
 use PixelPolishers\Resolver\Adapter\Pdo\Entity\PdoVersion;
 use PixelPolishers\Resolver\Entity\Package;
+use PixelPolishers\Resolver\Entity\Version;
 use PixelPolishers\Resolver\SemanticVersion;
 
 class Pdo implements AdapterInterface
@@ -118,14 +119,14 @@ class Pdo implements AdapterInterface
 
         $result = new PdoVersion($this);
         $result->setId($obj->id);
-        $result->setCreatedAt($obj->createdAt);
+        $result->setCreatedAt($obj->created_at);
         $result->setId($obj->id);
         $result->setLicense($obj->license);
         $result->setPackageId($obj->package_id);
         $result->setReference($obj->reference);
-        $result->setReferenceType($obj->referenceType);
-        $result->setReferenceUrl($obj->referenceUrl);
-        $result->setUpdatedAt($obj->updatedAt);
+        $result->setReferenceType($obj->reference_type);
+        $result->setReferenceUrl($obj->reference_url);
+        $result->setUpdatedAt($obj->updated_at);
         $result->setVersion(SemanticVersion::fromString($obj->version));
         return $result;
     }
@@ -146,14 +147,14 @@ class Pdo implements AdapterInterface
         foreach ($stmt->fetchAll(\PDO::FETCH_CLASS) as $row) {
             $entity = new PdoVersion($this);
             $entity->setId($row->id);
-            $entity->setCreatedAt($row->createdAt);
+            $entity->setCreatedAt($row->created_at);
             $entity->setId($row->id);
             $entity->setLicense($row->license);
             $entity->setPackageId($row->package_id);
             $entity->setReference($row->reference);
-            $entity->setReferenceType($row->referenceType);
-            $entity->setReferenceUrl($row->referenceUrl);
-            $entity->setUpdatedAt($row->updatedAt);
+            $entity->setReferenceType($row->reference_type);
+            $entity->setReferenceUrl($row->reference_url);
+            $entity->setUpdatedAt($row->updated_at);
             $entity->setVersion(SemanticVersion::fromString($row->version));
 
             $versions[] = $entity;
@@ -161,8 +162,80 @@ class Pdo implements AdapterInterface
 
         return $versions;
     }
-	
+
 	public function persistPackage(Package $package)
 	{
+        if ($package->getId()) {
+            $sql = "UPDATE " . $this->getTablePrefix() . "package
+                    SET
+                        fullname = ?,
+                        description = ?
+                    WHERE
+                        id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute(array(
+                $package->getFullname(),
+                $package->getDescription(),
+                $package->getId(),
+            ));
+        } else {
+            $sql = "INSERT INTO " . $this->getTablePrefix() . "package
+                    (fullname, description)
+                    VALUES
+                    (?, ?)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute(array(
+                $package->getFullname(),
+                $package->getDescription(),
+            ));
+
+            $package->setId($this->pdo->lastInsertId());
+        }
+
+        foreach ($package->getVersions() as $version) {
+            $this->persistVersion($version);
+        }
+    }
+
+	public function persistVersion(Version $version)
+	{
+        $data = array(
+            $version->getPackage()->getId(),
+            $version->getVersion(),
+            $version->getReference(),
+            $version->getReferenceType(),
+            $version->getReferenceUrl(),
+            $version->getLicense(),
+            $version->getCreatedAt()->format('Y-m-d H:i:s'),
+            $version->getUpdatedAt()->format('Y-m-d H:i:s'),
+        );
+
+        if ($version->getId()) {
+            $data[] = $version->getId();
+
+            $sql = "UPDATE " . $this->getTablePrefix() . "version
+                    SET
+                        package_id = ?,
+                        version = ?,
+                        reference = ?,
+                        reference_type = ?,
+                        reference_url = ?,
+                        license = ?,
+                        created_at = ?,
+                        updated_at = ?
+                    WHERE
+                        id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($data);
+        } else {
+            $sql = "INSERT INTO " . $this->getTablePrefix() . "version
+                    (package_id, version, reference, reference_type, reference_url, license, created_at, updated_at)
+                    VALUES
+                    (?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($data);
+
+            $version->setId($this->pdo->lastInsertId());
+        }
 	}
 }

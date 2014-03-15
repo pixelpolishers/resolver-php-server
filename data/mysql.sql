@@ -18,11 +18,11 @@ CREATE TABLE `resolver_version` (
 	`package_id` int(10) unsigned NOT NULL,
 	`version` varchar(255) NOT NULL,
 	`reference` varchar(255) NOT NULL,
-	`referenceType` varchar(255) NOT NULL,
-	`referenceUrl` varchar(255) NOT NULL,
+	`reference_type` varchar(255) NOT NULL,
+	`reference_url` varchar(255) NOT NULL,
 	`license` varchar(255) NOT NULL,
-	`createdAt` datetime NOT NULL,
-	`updatedAt` datetime NOT NULL,
+	`created_at` datetime NOT NULL,
+	`updated_at` datetime NOT NULL,
 	PRIMARY KEY (`id`),
 	KEY `package_id` (`package_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
