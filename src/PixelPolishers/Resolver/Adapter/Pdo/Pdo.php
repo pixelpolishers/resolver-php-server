@@ -71,6 +71,7 @@ class Pdo implements AdapterInterface
 
         $result = new PdoPackage($this);
         $result->setId($obj->id);
+        $result->setUserId($obj->user_id);
         $result->setFullname($obj->fullname);
         $result->setDescription($obj->description);
         return $result;
