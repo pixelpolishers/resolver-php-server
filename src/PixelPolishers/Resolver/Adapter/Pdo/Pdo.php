@@ -12,6 +12,7 @@ use PixelPolishers\Resolver\Adapter\AdapterInterface;
 use PixelPolishers\Resolver\Adapter\Pdo\Entity\PdoPackage;
 use PixelPolishers\Resolver\Adapter\Pdo\Entity\PdoPackageLink;
 use PixelPolishers\Resolver\Adapter\Pdo\Entity\PdoVersion;
+use PixelPolishers\Resolver\Entity\Package;
 use PixelPolishers\Resolver\SemanticVersion;
 
 class Pdo implements AdapterInterface
@@ -160,4 +161,8 @@ class Pdo implements AdapterInterface
 
         return $versions;
     }
+	
+	public function persistPackage(Package $package)
+	{
+	}
 }
