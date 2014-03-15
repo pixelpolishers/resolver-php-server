@@ -81,6 +81,12 @@ class Server
 
         $result = $controller->execute();
 
-        return json_encode($result);
+        $data = json_encode($result);
+
+        if (array_key_exists('callback', $_GET)) {
+            $data = $_GET['callback'] . '(' . $data . ')';
+        }
+        
+        return $data;
     }
 }
