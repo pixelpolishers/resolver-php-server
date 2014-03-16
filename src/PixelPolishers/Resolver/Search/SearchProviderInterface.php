@@ -6,7 +6,7 @@
  * @license https://github.com/pixelpolishers/resolver-server
  */
 
-namespace PixelPolishers\Resolver\SearchProvider;
+namespace PixelPolishers\Resolver\Search;
 
 interface SearchProviderInterface
 {

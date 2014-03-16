@@ -8,7 +8,7 @@
 
 namespace PixelPolishers\Resolver\Server\Controller;
 
-use PixelPolishers\Resolver\SearchProvider\SearchProviderInterface;
+use PixelPolishers\Resolver\Search\SearchProviderInterface;
 
 class SearchController extends AbstractController
 {
