@@ -130,7 +130,7 @@ class Pdo implements AdapterInterface
         $result->setVersion(SemanticVersion::fromString($obj->version));
         return $result;
     }
-
+	
     public function findVersions($name)
     {
         $sql = "SELECT v.*
@@ -162,6 +162,36 @@ class Pdo implements AdapterInterface
 
         return $versions;
     }
+
+    public function findVersionsByPackageId($id)
+	{
+        $sql = "SELECT v.*
+                FROM " . $this->getTablePrefix() . "version AS v
+				WHERE v.package_id = :id";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        $versions = array();
+        foreach ($stmt->fetchAll(\PDO::FETCH_CLASS) as $row) {
+            $entity = new PdoVersion($this);
+            $entity->setId($row->id);
+            $entity->setCreatedAt($row->created_at);
+            $entity->setId($row->id);
+            $entity->setLicense($row->license);
+            $entity->setPackageId($row->package_id);
+            $entity->setReference($row->reference);
+            $entity->setReferenceType($row->reference_type);
+            $entity->setReferenceUrl($row->reference_url);
+            $entity->setUpdatedAt($row->updated_at);
+            $entity->setVersion(SemanticVersion::fromString($row->version));
+
+            $versions[] = $entity;
+        }
+
+        return $versions;
+	}
 
 	public function persistPackage(Package $package)
 	{

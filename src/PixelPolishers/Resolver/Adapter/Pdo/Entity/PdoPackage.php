@@ -20,4 +20,16 @@ class PdoPackage extends Package
         parent::__construct();
         $this->pdo = $pdo;
     }
+
+    public function getVersions()
+    {
+        $result = parent::getVersions();
+
+        if (count($result) == 0) {
+            $result = $this->pdo->findVersionsByPackageId($this->getId());
+            $this->setVersions($result);
+        }
+
+        return $result;
+    }
 }
