@@ -132,7 +132,7 @@ class Package
     {
         $this->repositoryType = $repositoryType;
     }
-    
+
     public function addVersion(Version $version)
     {
         if (!in_array($version, $this->versions)) {
@@ -145,6 +145,15 @@ class Package
     public function getVersions()
     {
         return $this->versions;
+    }
+
+    public function removeVersion(Version $version)
+    {
+        for ($i = count($this->versions) - 1; $i >= 0; --$i) {
+            if ($this->versions[$i] == $version) {
+                unset($this->versions[$i]);
+            }
+        }
     }
 
     public function setVersions($versions)

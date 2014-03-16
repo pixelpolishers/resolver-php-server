@@ -103,7 +103,12 @@ class GitHubImporter implements ImporterInterface
         $output = curl_exec($ch);
         curl_close($ch);
 
-        return json_decode($output);
+        $json = json_decode($output);
+        if (isset($json->message)) {
+            throw new \RuntimeException($json->message);
+        }
+
+        return $json;
     }
 
     private function getRepositoryName($url)
