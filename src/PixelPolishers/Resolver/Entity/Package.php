@@ -14,6 +14,8 @@ class Package
     private $createdAt;
     private $updatedAt;
     private $userId;
+    private $vendor;
+    private $name;
     private $fullname;
     private $description;
     private $versions;
@@ -69,18 +71,24 @@ class Package
         $this->userId = $userId;
     }
 
-    public function getName()
-    {
-		list($vendor, $name) = explode('/', $this->getFullname(), 2);
-		
-		return $name;
-    }
-
     public function getVendor()
     {
-		list($vendor, $name) = explode('/', $this->getFullname(), 2);
-		
-		return $vendor;
+        return $this->vendor;
+    }
+
+    public function setVendor(Vendor $vendor)
+    {
+        $this->vendor = $vendor;
+    }
+
+    public function getName()
+    {
+		return $this->name;
+    }
+
+    public function setName($name)
+    {
+		$this->name = $name;
     }
 
     public function getFullname()
