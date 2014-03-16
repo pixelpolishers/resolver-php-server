@@ -41,6 +41,20 @@ class Package
         $this->userId = $userId;
     }
 
+    public function getName()
+    {
+		list($vendor, $name) = explode('/', $this->getFullname(), 2);
+		
+		return $name;
+    }
+
+    public function getVendor()
+    {
+		list($vendor, $name) = explode('/', $this->getFullname(), 2);
+		
+		return $vendor;
+    }
+
     public function getFullname()
     {
         return $this->fullname;
