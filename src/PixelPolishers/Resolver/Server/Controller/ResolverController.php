@@ -8,7 +8,7 @@
 
 namespace PixelPolishers\Resolver\Server\Controller;
 
-class RepositoryController extends AbstractController
+class ResolverController extends AbstractController
 {
     public function execute()
     {
@@ -16,6 +16,7 @@ class RepositoryController extends AbstractController
 
         $result['packages'] = array();
         $result['api'] = array(
+            'lookup' => $this->getServer()->getRouter()->getLookupUrl(),
             'search' => $this->getServer()->getRouter()->getSearchUrl(),
             'resolver' => $this->getServer()->getRouter()->getResolverUrl(),
         );

@@ -9,8 +9,6 @@
 namespace PixelPolishers\Resolver\Server\Router;
 
 use PixelPolishers\Resolver\Server\Controller\ControllerInterface;
-use PixelPolishers\Resolver\Server\Controller\FindController;
-use PixelPolishers\Resolver\Server\Controller\RepositoryController;
 
 /**
  * The router that find the correct controller for the server.
@@ -18,66 +16,29 @@ use PixelPolishers\Resolver\Server\Controller\RepositoryController;
 class Router implements RouterInterface
 {
     /**
-     * The url that should be accessed for searching.
+     * The controller map with the url as key and the controller as value.
      *
-     * @var string
+     * @var array
      */
-    private $searchUrl;
-
-    /**
-     * The url that should be accessed to retrieve the JSON overview.
-     *
-     * @var string
-     */
-    private $resolverUrl;
+    private $controllerMap;
 
     /**
      * Initializes a new instance of this class.
      */
     public function __construct()
     {
-        $this->searchUrl = '/resolver/search';
-        $this->resolverUrl = '/resolver.json';
+        $this->controllerMap = array();
     }
 
     /**
-     * Gets the search URL.
+     * Sets the controller.
      *
-     * @return string
+     * @param string $url The url to set.
+     * @param ControllerInterface $controller The controller to set.
      */
-    public function getSearchUrl()
+    public function setController($url, ControllerInterface $controller)
     {
-        return $this->searchUrl;
-    }
-
-    /**
-     * Sets the search URL.
-     *
-     * @param string $searchUrl The url to set.
-     */
-    public function setSearchUrl($searchUrl)
-    {
-        $this->searchUrl = $searchUrl;
-    }
-
-    /**
-     * Gets the resolver URL.
-     *
-     * @return string
-     */
-    public function getResolverUrl()
-    {
-        return $this->resolverUrl;
-    }
-
-    /**
-     * Sets the repository URL.
-     *
-     * @param string $repositoryUrl The url to set.
-     */
-    public function setResolverUrl($repositoryUrl)
-    {
-        $this->resolverUrl = $repositoryUrl;
+        $this->controllerMap[$url] = $controller;
     }
 
     /**
@@ -88,14 +49,10 @@ class Router implements RouterInterface
      */
     public function find($url)
     {
-        switch ($url) {
-            case $this->searchUrl:
-                return new FindController();
-
-            case $this->resolverUrl:
-                return new RepositoryController();
+        if (!array_key_exists($url, $this->controllerMap)) {
+            return null;
         }
-
-        return null;
+        
+        return $this->controllerMap[$url];
     }
 }
