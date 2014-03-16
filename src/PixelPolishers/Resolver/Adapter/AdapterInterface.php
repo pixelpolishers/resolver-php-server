@@ -9,6 +9,7 @@
 namespace PixelPolishers\Resolver\Adapter;
 
 use PixelPolishers\Resolver\Entity\Package;
+use PixelPolishers\Resolver\Entity\Version;
 
 interface AdapterInterface
 {
@@ -19,4 +20,5 @@ interface AdapterInterface
     public function findVersions($name);
 	
     public function persistPackage(Package $package);
+	public function persistVersion(Version $version);
 }
