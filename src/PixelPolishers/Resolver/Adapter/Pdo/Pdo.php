@@ -37,7 +37,7 @@ class Pdo implements AdapterInterface
     {
         $this->tablePrefix = $prefix;
     }
-	
+
 	private function buildUpPackage($obj)
 	{
         $result = new PdoPackage($this);
@@ -51,7 +51,7 @@ class Pdo implements AdapterInterface
         $result->setDescription($obj->description);
         return $result;
 	}
-	
+
 	private function buildUpPackageLink($obj)
 	{
 		$result = new PdoPackageLink($this);
@@ -59,7 +59,7 @@ class Pdo implements AdapterInterface
 		$result->setPackageVersionId($obj->package_version_id);
 		return $result;
 	}
-	
+
 	private function buildUpVendor($obj)
 	{
         $result = new PdoVendor($this);
@@ -67,7 +67,7 @@ class Pdo implements AdapterInterface
         $result->setName($obj->name);
         return $result;
 	}
-	
+
 	private function buildUpVersion($obj)
 	{
         $result = new PdoVersion($this);
@@ -133,7 +133,7 @@ class Pdo implements AdapterInterface
         if (!$obj) {
             return null;
         }
-		
+
 		return $this->buildUpPackage($obj);
     }
 
@@ -187,10 +187,10 @@ class Pdo implements AdapterInterface
         if (!$obj) {
             return null;
         }
-		
+
 		return $this->buildUpVersion($obj);
     }
-	
+
     public function findVersions($name)
     {
         $sql = "SELECT v.*
@@ -229,10 +229,27 @@ class Pdo implements AdapterInterface
         return $versions;
 	}
 
+    public function searchPackages($query)
+    {
+        $sql = "SELECT p.*
+                FROM " . $this->getTablePrefix() . "package AS p
+				WHERE p.fullname LIKE :query
+                OR p.description LIKE :query";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(array('query' => '%' . $query . '%'));
+
+        $result = array();
+        foreach ($stmt->fetchAll(\PDO::FETCH_CLASS) as $row) {
+            $result[] = $this->buildUpPackage($row);
+        }
+        return $result;
+    }
+
 	public function persistPackage(Package $package)
 	{
 		$this->persistVendor($package->getVendor());
-		
+
 		$data = array(
 			$package->getCreatedAt()->format('Y-m-d H:i:s'),
 			$package->getUpdatedAt()->format('Y-m-d H:i:s'),
@@ -242,10 +259,10 @@ class Pdo implements AdapterInterface
 			$package->getFullname(),
 			$package->getDescription(),
 		);
-		
+
         if ($package->getId()) {
 			$data[] = $package->getId();
-			
+
             $sql = "UPDATE " . $this->getTablePrefix() . "package
                     SET
 						created_at = ?,
@@ -344,21 +361,21 @@ class Pdo implements AdapterInterface
             $version->setId($this->pdo->lastInsertId());
         }
 	}
-	
+
 	public function removePackage(Package $package)
 	{
 		$sql = "DELETE FROM " . $this->getTablePrefix() . "package WHERE id = ?";
 		$stmt = $this->pdo->prepare($sql);
 		$stmt->execute(array($package->getId()));
 	}
-	
+
 	public function removeVendor(Vendor $vendor)
 	{
 		$sql = "DELETE FROM " . $this->getTablePrefix() . "vendor WHERE id = ?";
 		$stmt = $this->pdo->prepare($sql);
 		$stmt->execute(array($vendor->getId()));
 	}
-	
+
 	public function removeVersion(Version $version)
 	{
 		$sql = "DELETE FROM " . $this->getTablePrefix() . "version WHERE id = ?";

@@ -26,6 +26,8 @@ interface AdapterInterface
     public function findVersions($name);
 	public function findVersionsByPackageId($id);
 
+    public function searchPackages($query);
+
     public function persistPackage(Package $package);
 	public function persistVersion(Version $version);
 	public function persistVendor(Vendor $vendor);

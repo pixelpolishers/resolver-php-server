@@ -8,19 +8,19 @@
 
 namespace PixelPolishers\Resolver\Search;
 
-class PdoSearchProvider implements SearchProviderInterface
-{
-    private $pdo;
+use PixelPolishers\Resolver\Adapter\AdapterInterface;
 
-    public function __construct(\PDO $pdo)
+class AdapterSearchProvider implements SearchProviderInterface
+{
+    private $adapter;
+
+    public function __construct(AdapterInterface $adapter)
     {
-        $this->pdo = $pdo;
+        $this->adapter = $adapter;
     }
 
     public function search($query)
     {
-        $result = array();
-
-        return $result;
+        return $this->adapter->searchPackages($query);
     }
 }

@@ -9,6 +9,7 @@
 namespace PixelPolishers\Resolver\Server\Controller;
 
 use PixelPolishers\Resolver\Search\SearchProviderInterface;
+use PixelPolishers\Resolver\Entity\Package;
 
 class SearchController extends AbstractController
 {
@@ -54,8 +55,34 @@ class SearchController extends AbstractController
 
     private function searchPackages($query)
     {
-        $result = array();
+        $searchResults = $this->getSearchProvider()->search($query);
 
+        $result = array();
+        foreach ($searchResults as $searchResult) {
+            $result[] = $this->outputPackage($searchResult);
+        }
+        return $result;
+    }
+
+    private function outputPackage(Package $package)
+    {
+        return array(
+            'name' => $package->getName(),
+            'description' => $package->getDescription(),
+            'fullname' => $package->getFullname(),
+            //'versions' => $this->outputPackageVersions($package),
+        );
+    }
+
+    private function outputPackageVersions(Package $package)
+    {
+        $result = array();
+        foreach ($package->getVersions() as $version) {
+            $result[] = array(
+                'version' => (string)$version->getVersion(),
+                'license' => $version->getLicense(),
+            );
+        }
         return $result;
     }
 }
