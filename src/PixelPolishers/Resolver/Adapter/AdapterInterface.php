@@ -17,13 +17,13 @@ interface AdapterInterface
     public function findDependencies($versionId);
 
 	public function findPackageById($id);
-    public function findPackageByName($name);
+    public function findPackageByFullname($fullName);
 
 	public function findVendorById($id);
 	public function findVendorByName($name);
 
     public function findVersionById($id);
-    public function findVersions($name);
+    public function findVersions($packageFullName);
 	public function findVersionsByPackageId($id);
 
     public function searchPackages($query);

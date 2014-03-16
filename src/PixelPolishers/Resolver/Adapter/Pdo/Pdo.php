@@ -49,6 +49,8 @@ class Pdo implements AdapterInterface
         $result->setName($obj->name);
         $result->setFullname($obj->fullname);
         $result->setDescription($obj->description);
+        $result->setRepositoryUrl($obj->repository_url);
+        $result->setRepositoryType($obj->repository_type);
         return $result;
 	}
 
@@ -73,14 +75,12 @@ class Pdo implements AdapterInterface
         $result = new PdoVersion($this);
         $result->setId($obj->id);
         $result->setCreatedAt($obj->created_at);
-        $result->setId($obj->id);
+        $result->setUpdatedAt($obj->updated_at);
+        $result->setVersion($obj->version);
         $result->setLicense($obj->license);
         $result->setPackageId($obj->package_id);
-        $result->setReference($obj->reference);
-        $result->setReferenceType($obj->reference_type);
-        $result->setReferenceUrl($obj->reference_url);
-        $result->setUpdatedAt($obj->updated_at);
-        $result->setVersion(SemanticVersion::fromString($obj->version));
+        $result->setReferenceName($obj->reference_name);
+        $result->setReferenceHash($obj->reference_hash);
         return $result;
 	}
 
@@ -91,8 +91,7 @@ class Pdo implements AdapterInterface
                 WHERE d.version_id = :id";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':id', $versionId, \PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute(array('id' => $versionId));
 
         $result = array();
         foreach ($stmt->fetchAll(\PDO::FETCH_OBJ) as $row) {
@@ -108,8 +107,7 @@ class Pdo implements AdapterInterface
                 WHERE p.id = :id";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute(array('id' => $id));
 
         $obj = $stmt->fetch(\PDO::FETCH_OBJ);
         if (!$obj) {
@@ -119,15 +117,14 @@ class Pdo implements AdapterInterface
 		return $this->buildUpPackage($obj);
     }
 
-    public function findPackageByName($name)
+    public function findPackageByFullname($fullName)
     {
         $sql = "SELECT p.*
                 FROM " . $this->getTablePrefix() . "package AS p
-                WHERE p.fullname = :name";
+                WHERE p.fullname = :fullname";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':name', $name, \PDO::PARAM_STR);
-        $stmt->execute();
+        $stmt->execute(array('fullname' => $fullName));
 
         $obj = $stmt->fetch(\PDO::FETCH_OBJ);
         if (!$obj) {
@@ -144,8 +141,7 @@ class Pdo implements AdapterInterface
                 WHERE v.id = :id";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute(array('id' => $id));
 
         $obj = $stmt->fetch(\PDO::FETCH_OBJ);
         if (!$obj) {
@@ -162,8 +158,7 @@ class Pdo implements AdapterInterface
                 WHERE v.name = :name";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':name', $name, \PDO::PARAM_STR);
-        $stmt->execute();
+        $stmt->execute(array('name' => $name));
 
         $obj = $stmt->fetch(\PDO::FETCH_OBJ);
         if (!$obj) {
@@ -180,8 +175,7 @@ class Pdo implements AdapterInterface
                 WHERE v.id = :id";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute(array('id' => $id));
 
         $obj = $stmt->fetch(\PDO::FETCH_OBJ);
         if (!$obj) {
@@ -191,17 +185,16 @@ class Pdo implements AdapterInterface
 		return $this->buildUpVersion($obj);
     }
 
-    public function findVersions($name)
+    public function findVersions($packageFullName)
     {
         $sql = "SELECT v.*
                 FROM " . $this->getTablePrefix() . "version AS v
                 LEFT JOIN " . $this->getTablePrefix() . "package AS p
                 ON p.id = v.package_id
-                WHERE p.fullname = :name";
+                WHERE p.fullname = :fullname";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':name', $name, \PDO::PARAM_STR);
-        $stmt->execute();
+        $stmt->execute(array('fullname' => $packageFullName));
 
         $versions = array();
         foreach ($stmt->fetchAll(\PDO::FETCH_CLASS) as $row) {
@@ -218,8 +211,7 @@ class Pdo implements AdapterInterface
 				WHERE v.package_id = :id";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute(array('id' => $id));
 
         $versions = array();
         foreach ($stmt->fetchAll(\PDO::FETCH_CLASS) as $row) {
@@ -258,6 +250,8 @@ class Pdo implements AdapterInterface
 			$package->getName(),
 			$package->getFullname(),
 			$package->getDescription(),
+			$package->getRepositoryUrl(),
+			$package->getRepositoryType(),
 		);
 
         if ($package->getId()) {
@@ -271,16 +265,18 @@ class Pdo implements AdapterInterface
 						vendor_id = ?,
 						name = ?,
                         fullname = ?,
-                        description = ?
+                        description = ?,
+                        repository_url = ?,
+                        repository_type = ?
                     WHERE
                         id = ?";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($data);
         } else {
             $sql = "INSERT INTO " . $this->getTablePrefix() . "package
-                    (created_at, updated_at, user_id, vendor_id, name, fullname, description)
+                    (created_at, updated_at, user_id, vendor_id, name, fullname, description, repository_url, repository_type)
                     VALUES
-                    (?, ?, ?, ?, ?, ?, ?)";
+                    (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($data);
 
@@ -325,9 +321,8 @@ class Pdo implements AdapterInterface
         $data = array(
             $version->getPackage()->getId(),
             $version->getVersion(),
-            $version->getReference(),
-            $version->getReferenceType(),
-            $version->getReferenceUrl(),
+            $version->getReferenceHash(),
+            $version->getReferenceName(),
             $version->getLicense(),
             $version->getCreatedAt()->format('Y-m-d H:i:s'),
             $version->getUpdatedAt()->format('Y-m-d H:i:s'),
@@ -340,9 +335,8 @@ class Pdo implements AdapterInterface
                     SET
                         package_id = ?,
                         version = ?,
-                        reference = ?,
-                        reference_type = ?,
-                        reference_url = ?,
+                        reference_hash = ?,
+                        reference_name = ?,
                         license = ?,
                         created_at = ?,
                         updated_at = ?
@@ -352,9 +346,9 @@ class Pdo implements AdapterInterface
             $stmt->execute($data);
         } else {
             $sql = "INSERT INTO " . $this->getTablePrefix() . "version
-                    (package_id, version, reference, reference_type, reference_url, license, created_at, updated_at)
+                    (package_id, version, reference_hash, reference_name, license, created_at, updated_at)
                     VALUES
-                    (?, ?, ?, ?, ?, ?, ?, ?)";
+                    (?, ?, ?, ?, ?, ?, ?)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($data);
 

@@ -12,13 +12,12 @@ class Version
 {
     private $id;
     private $package;
-    private $version;
-    private $reference;
-    private $referenceType;
-    private $referenceUrl;
-    private $license;
     private $createdAt;
     private $updatedAt;
+    private $version;
+    private $license;
+    private $referenceName;
+    private $referenceHash;
     private $dependencies;
 
     public function __construct()
@@ -41,59 +40,13 @@ class Version
         return $this->package;
     }
 
-    public function setPackage($package)
+    public function setPackage(Package $package)
     {
-        $this->package = $package;
-    }
+        if ($this->package !== $package) {
+            $this->package = $package;
 
-    public function getVersion()
-    {
-        return $this->version;
-    }
-
-    public function setVersion($version)
-    {
-        $this->version = $version;
-    }
-
-    public function getReference()
-    {
-        return $this->reference;
-    }
-
-    public function setReference($reference)
-    {
-        $this->reference = $reference;
-    }
-
-    public function getReferenceType()
-    {
-        return $this->referenceType;
-    }
-
-    public function setReferenceType($referenceType)
-    {
-        $this->referenceType = $referenceType;
-    }
-
-    public function getReferenceUrl()
-    {
-        return $this->referenceUrl;
-    }
-
-    public function setReferenceUrl($referenceUrl)
-    {
-        $this->referenceUrl = $referenceUrl;
-    }
-
-    public function getLicense()
-    {
-        return $this->license;
-    }
-
-    public function setLicense($license)
-    {
-        $this->license = $license;
+            $package->addVersion($this);
+        }
     }
 
     public function getCreatedAt()
@@ -122,6 +75,46 @@ class Version
         $this->updatedAt = $updatedAt;
     }
 
+    public function getVersion()
+    {
+        return $this->version;
+    }
+
+    public function setVersion($version)
+    {
+        $this->version = $version;
+    }
+
+    public function getLicense()
+    {
+        return $this->license;
+    }
+
+    public function setLicense($license)
+    {
+        $this->license = $license;
+    }
+
+    public function getReferenceName()
+    {
+        return $this->referenceName;
+    }
+
+    public function setReferenceName($referenceName)
+    {
+        $this->referenceName = $referenceName;
+    }
+
+    public function getReferenceHash()
+    {
+        return $this->referenceHash;
+    }
+
+    public function setReferenceHash($referenceHash)
+    {
+        $this->referenceHash = $referenceHash;
+    }
+    
     public function addDependency(PackageLink $package)
     {
         $this->dependencies[] = $package;

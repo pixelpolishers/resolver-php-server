@@ -18,6 +18,8 @@ class Package
     private $name;
     private $fullname;
     private $description;
+    private $repositoryUrl;
+    private $repositoryType;
     private $versions;
 
     public function __construct()
@@ -111,9 +113,33 @@ class Package
         $this->description = $description;
     }
 
+    public function getRepositoryUrl()
+    {
+        return $this->repositoryUrl;
+    }
+
+    public function setRepositoryUrl($repositoryUrl)
+    {
+        $this->repositoryUrl = $repositoryUrl;
+    }
+
+    public function getRepositoryType()
+    {
+        return $this->repositoryType;
+    }
+
+    public function setRepositoryType($repositoryType)
+    {
+        $this->repositoryType = $repositoryType;
+    }
+    
     public function addVersion(Version $version)
     {
-        $this->versions[] = $version;
+        if (!in_array($version, $this->versions)) {
+            $this->versions[] = $version;
+
+            $version->setPackage($this);
+        }
     }
 
     public function getVersions()

@@ -14,6 +14,8 @@ CREATE TABLE `resolver_package` (
 	`name` varchar(255) NOT NULL,
 	`fullname` varchar(255) NOT NULL,
 	`description` varchar(255) NOT NULL,
+	`repository_url` varchar(255) NOT NULL,
+	`repository_type` varchar(255) NOT NULL,
 	UNIQUE (`fullname`),
 	PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
@@ -28,9 +30,8 @@ CREATE TABLE `resolver_version` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 	`package_id` int(10) unsigned NOT NULL,
 	`version` varchar(255) NOT NULL,
-	`reference` varchar(255) NOT NULL,
-	`reference_type` varchar(255) NOT NULL,
-	`reference_url` varchar(255) NOT NULL,
+	`reference_name` varchar(255) NOT NULL,
+	`reference_hash` varchar(255) NOT NULL,
 	`license` varchar(255) NOT NULL,
 	`created_at` datetime NOT NULL,
 	`updated_at` datetime NOT NULL,
