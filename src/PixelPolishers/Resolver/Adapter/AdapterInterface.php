@@ -22,4 +22,7 @@ interface AdapterInterface
 	
     public function persistPackage(Package $package);
 	public function persistVersion(Version $version);
+	
+	public function removePackage(Package $package);
+	public function removeVersion(Version $version);
 }

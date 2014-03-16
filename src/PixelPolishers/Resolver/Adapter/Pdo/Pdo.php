@@ -268,4 +268,18 @@ class Pdo implements AdapterInterface
             $version->setId($this->pdo->lastInsertId());
         }
 	}
+	
+	public function removePackage(Package $package)
+	{
+		$sql = "DELETE FROM " . $this->getTablePrefix() . "package WHERE id = ?";
+		$stmt = $this->pdo->prepare($sql);
+		$stmt->execute(array($package->getId()));
+	}
+	
+	public function removeVersion(Version $version)
+	{
+		$sql = "DELETE FROM " . $this->getTablePrefix() . "version WHERE id = ?";
+		$stmt = $this->pdo->prepare($sql);
+		$stmt->execute(array($version->getId()));
+	}
 }
