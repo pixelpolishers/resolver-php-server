@@ -14,11 +14,34 @@ use PixelPolishers\Resolver\Adapter\Pdo\Pdo;
 class PdoPackage extends Package
 {
     private $pdo;
+	private $vendorId;
 
     public function __construct(Pdo $pdo)
     {
         parent::__construct();
         $this->pdo = $pdo;
+    }
+
+    public function getVendorId()
+    {
+        return $this->vendorId;
+    }
+
+    public function setVendorId($vendorId)
+    {
+        $this->vendorId = $vendorId;
+    }
+
+    public function getVendor()
+    {
+        $result = parent::getVendor();
+
+        if ($result === null) {
+            $result = $this->pdo->findVendorById($this->getVendorId());
+            $this->setVendor($result);
+        }
+
+        return $result;
     }
 
     public function getVersions()

@@ -11,8 +11,10 @@ namespace PixelPolishers\Resolver\Adapter\Pdo;
 use PixelPolishers\Resolver\Adapter\AdapterInterface;
 use PixelPolishers\Resolver\Adapter\Pdo\Entity\PdoPackage;
 use PixelPolishers\Resolver\Adapter\Pdo\Entity\PdoPackageLink;
+use PixelPolishers\Resolver\Adapter\Pdo\Entity\PdoVendor;
 use PixelPolishers\Resolver\Adapter\Pdo\Entity\PdoVersion;
 use PixelPolishers\Resolver\Entity\Package;
+use PixelPolishers\Resolver\Entity\Vendor;
 use PixelPolishers\Resolver\Entity\Version;
 use PixelPolishers\Resolver\SemanticVersion;
 
@@ -35,6 +37,52 @@ class Pdo implements AdapterInterface
     {
         $this->tablePrefix = $prefix;
     }
+	
+	private function buildUpPackage($obj)
+	{
+        $result = new PdoPackage($this);
+        $result->setId($obj->id);
+		$result->setCreatedAt($obj->created_at);
+		$result->setUpdatedAt($obj->updated_at);
+        $result->setUserId($obj->user_id);
+        $result->setVendorId($obj->vendor_id);
+        $result->setName($obj->name);
+        $result->setFullname($obj->fullname);
+        $result->setDescription($obj->description);
+        return $result;
+	}
+	
+	private function buildUpPackageLink($obj)
+	{
+		$result = new PdoPackageLink($this);
+		$result->setVersionId($obj->version_id);
+		$result->setPackageVersionId($obj->package_version_id);
+		return $result
+	}
+	
+	private function buildUpVendor($obj)
+	{
+        $result = new PdoVendor($this);
+        $result->setId($obj->id);
+        $result->setName($obj->name);
+        return $result;
+	}
+	
+	private function buildUpVersion($obj)
+	{
+        $result = new PdoVersion($this);
+        $result->setId($obj->id);
+        $result->setCreatedAt($obj->created_at);
+        $result->setId($obj->id);
+        $result->setLicense($obj->license);
+        $result->setPackageId($obj->package_id);
+        $result->setReference($obj->reference);
+        $result->setReferenceType($obj->reference_type);
+        $result->setReferenceUrl($obj->reference_url);
+        $result->setUpdatedAt($obj->updated_at);
+        $result->setVersion(SemanticVersion::fromString($obj->version));
+        return $result;
+	}
 
     public function findDependencies($versionId)
     {
@@ -48,10 +96,7 @@ class Pdo implements AdapterInterface
 
         $result = array();
         foreach ($stmt->fetchAll(\PDO::FETCH_OBJ) as $row) {
-            $packageLink = new PdoPackageLink($this);
-            $packageLink->setVersionId($row->version_id);
-            $packageLink->setPackageVersionId($row->package_version_id);
-            $result[] = $packageLink;
+            $result[] = $this->buildUpPackageLink($row);
         }
         return $result;
     }
@@ -71,12 +116,7 @@ class Pdo implements AdapterInterface
             return null;
         }
 
-        $result = new PdoPackage($this);
-        $result->setId($obj->id);
-        $result->setUserId($obj->user_id);
-        $result->setFullname($obj->fullname);
-        $result->setDescription($obj->description);
-        return $result;
+		return $this->buildUpPackage($obj);
     }
 
     public function findPackageByName($name)
@@ -93,13 +133,44 @@ class Pdo implements AdapterInterface
         if (!$obj) {
             return null;
         }
+		
+		return $this->buildUpPackage($obj);
+    }
 
-        $result = new PdoPackage($this);
-        $result->setId($obj->id);
-        $result->setUserId($obj->user_id);
-        $result->setFullname($obj->fullname);
-        $result->setDescription($obj->description);
-        return $result;
+    public function findVendorById($id)
+    {
+        $sql = "SELECT v.*
+                FROM " . $this->getTablePrefix() . "vendor AS v
+                WHERE v.id = :id";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        $obj = $stmt->fetch(\PDO::FETCH_OBJ);
+        if (!$obj) {
+            return null;
+        }
+
+		return $this->buildUpVendor($obj);
+    }
+
+    public function findVendorByName($name)
+    {
+        $sql = "SELECT v.*
+                FROM " . $this->getTablePrefix() . "vendor AS v
+                WHERE v.name = :name";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':name', $name, \PDO::PARAM_STR);
+        $stmt->execute();
+
+        $obj = $stmt->fetch(\PDO::FETCH_OBJ);
+        if (!$obj) {
+            return null;
+        }
+
+		return $this->buildUpVendor($obj);
     }
 
     public function findVersionById($id)
@@ -116,19 +187,8 @@ class Pdo implements AdapterInterface
         if (!$obj) {
             return null;
         }
-
-        $result = new PdoVersion($this);
-        $result->setId($obj->id);
-        $result->setCreatedAt($obj->created_at);
-        $result->setId($obj->id);
-        $result->setLicense($obj->license);
-        $result->setPackageId($obj->package_id);
-        $result->setReference($obj->reference);
-        $result->setReferenceType($obj->reference_type);
-        $result->setReferenceUrl($obj->reference_url);
-        $result->setUpdatedAt($obj->updated_at);
-        $result->setVersion(SemanticVersion::fromString($obj->version));
-        return $result;
+		
+		return $this->buildUpVersion($obj);
     }
 	
     public function findVersions($name)
@@ -145,19 +205,7 @@ class Pdo implements AdapterInterface
 
         $versions = array();
         foreach ($stmt->fetchAll(\PDO::FETCH_CLASS) as $row) {
-            $entity = new PdoVersion($this);
-            $entity->setId($row->id);
-            $entity->setCreatedAt($row->created_at);
-            $entity->setId($row->id);
-            $entity->setLicense($row->license);
-            $entity->setPackageId($row->package_id);
-            $entity->setReference($row->reference);
-            $entity->setReferenceType($row->reference_type);
-            $entity->setReferenceUrl($row->reference_url);
-            $entity->setUpdatedAt($row->updated_at);
-            $entity->setVersion(SemanticVersion::fromString($row->version));
-
-            $versions[] = $entity;
+            $versions[] = $this->buildUpVersion($row);
         }
 
         return $versions;
@@ -175,19 +223,7 @@ class Pdo implements AdapterInterface
 
         $versions = array();
         foreach ($stmt->fetchAll(\PDO::FETCH_CLASS) as $row) {
-            $entity = new PdoVersion($this);
-            $entity->setId($row->id);
-            $entity->setCreatedAt($row->created_at);
-            $entity->setId($row->id);
-            $entity->setLicense($row->license);
-            $entity->setPackageId($row->package_id);
-            $entity->setReference($row->reference);
-            $entity->setReferenceType($row->reference_type);
-            $entity->setReferenceUrl($row->reference_url);
-            $entity->setUpdatedAt($row->updated_at);
-            $entity->setVersion(SemanticVersion::fromString($row->version));
-
-            $versions[] = $entity;
+            $versions[] = $this->buildUpVersion($row);
         }
 
         return $versions;
@@ -195,35 +231,75 @@ class Pdo implements AdapterInterface
 
 	public function persistPackage(Package $package)
 	{
+		$this->persistVendor($package->getVendor());
+		
+		$data = array(
+			$package->getCreatedAt()->format('Y-m-d H:i:s'),
+			$package->getUpdatedAt()->format('Y-m-d H:i:s'),
+			$package->getUserId(),
+			$package->getVendor()->getId(),
+			$package->getName(),
+			$package->getFullname(),
+			$package->getDescription(),
+		);
+		
         if ($package->getId()) {
+			$data[] = $package->getId();
+			
             $sql = "UPDATE " . $this->getTablePrefix() . "package
                     SET
+						created_at = ?,
+						updated_at = ?,
+						user_id = ?,
+						vendor_id = ?,
+						name = ?,
                         fullname = ?,
                         description = ?
                     WHERE
                         id = ?";
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute(array(
-                $package->getFullname(),
-                $package->getDescription(),
-                $package->getId(),
-            ));
+            $stmt->execute($data);
         } else {
             $sql = "INSERT INTO " . $this->getTablePrefix() . "package
-                    (fullname, description)
+                    (created_at, updated_at, user_id, vendor_id, name, fullname, description)
                     VALUES
-                    (?, ?)";
+                    (?, ?, ?, ?, ?, ?, ?)";
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute(array(
-                $package->getFullname(),
-                $package->getDescription(),
-            ));
+            $stmt->execute($data);
 
             $package->setId($this->pdo->lastInsertId());
         }
 
         foreach ($package->getVersions() as $version) {
             $this->persistVersion($version);
+        }
+    }
+
+	public function persistVendor(Vendor $vendor)
+	{
+        $data = array(
+			$vendor->getName(),
+        );
+
+        if ($vendor->getId()) {
+            $data[] = $vendor->getId();
+
+            $sql = "UPDATE " . $this->getTablePrefix() . "vendor
+                    SET
+                        name = ?
+                    WHERE
+                        id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($data);
+        } else {
+            $sql = "INSERT INTO " . $this->getTablePrefix() . "vendor
+                    (name)
+                    VALUES
+                    (?)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($data);
+
+            $vendor->setId($this->pdo->lastInsertId());
         }
     }
 
@@ -274,6 +350,13 @@ class Pdo implements AdapterInterface
 		$sql = "DELETE FROM " . $this->getTablePrefix() . "package WHERE id = ?";
 		$stmt = $this->pdo->prepare($sql);
 		$stmt->execute(array($package->getId()));
+	}
+	
+	public function removeVendor(Vendor $vendor)
+	{
+		$sql = "DELETE FROM " . $this->getTablePrefix() . "vendor WHERE id = ?";
+		$stmt = $this->pdo->prepare($sql);
+		$stmt->execute(array($vendor->getId()));
 	}
 	
 	public function removeVersion(Version $version)

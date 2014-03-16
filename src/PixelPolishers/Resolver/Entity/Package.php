@@ -11,6 +11,8 @@ namespace PixelPolishers\Resolver\Entity;
 class Package
 {
     private $id;
+    private $createdAt;
+    private $updatedAt;
     private $userId;
     private $fullname;
     private $description;
@@ -29,6 +31,32 @@ class Package
     public function setId($id)
     {
         $this->id = $id;
+    }
+
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt($createdAt)
+    {
+        if (!$createdAt instanceof \DateTime) {
+            $createdAt = new \DateTime($createdAt);
+        }
+        $this->createdAt = $createdAt;
+    }
+
+    public function getUpdatedAt()
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt($updatedAt)
+    {
+        if (!$updatedAt instanceof \DateTime) {
+            $updatedAt = new \DateTime($updatedAt);
+        }
+        $this->updatedAt = $updatedAt;
     }
 
     public function getUserId()
