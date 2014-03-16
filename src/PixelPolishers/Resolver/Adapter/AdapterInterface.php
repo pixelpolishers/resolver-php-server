@@ -9,6 +9,7 @@
 namespace PixelPolishers\Resolver\Adapter;
 
 use PixelPolishers\Resolver\Entity\Package;
+use PixelPolishers\Resolver\Entity\Vendor;
 use PixelPolishers\Resolver\Entity\Version;
 
 interface AdapterInterface

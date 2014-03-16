@@ -57,7 +57,7 @@ class Pdo implements AdapterInterface
 		$result = new PdoPackageLink($this);
 		$result->setVersionId($obj->version_id);
 		$result->setPackageVersionId($obj->package_version_id);
-		return $result
+		return $result;
 	}
 	
 	private function buildUpVendor($obj)
