@@ -34,7 +34,7 @@ class SemanticVersion
     {
         $result = null;
 
-        $regex = '';
+        $regex = 'v?';
         $regex .= '([0-9]+)\.';
         $regex .= '([0-9]+)\.';
         $regex .= '([0-9]+)';
