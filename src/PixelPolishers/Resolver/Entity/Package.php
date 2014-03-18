@@ -154,6 +154,8 @@ class Package
                 unset($this->versions[$i]);
             }
         }
+
+        $this->versions = array_values($this->versions);
     }
 
     public function setVersions($versions)

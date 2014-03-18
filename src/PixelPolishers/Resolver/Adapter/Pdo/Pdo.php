@@ -16,7 +16,6 @@ use PixelPolishers\Resolver\Adapter\Pdo\Entity\PdoVersion;
 use PixelPolishers\Resolver\Entity\Package;
 use PixelPolishers\Resolver\Entity\Vendor;
 use PixelPolishers\Resolver\Entity\Version;
-use PixelPolishers\Resolver\SemanticVersion;
 
 class Pdo implements AdapterInterface
 {
@@ -283,9 +282,17 @@ class Pdo implements AdapterInterface
             $package->setId($this->pdo->lastInsertId());
         }
 
+        // Persist the versions:
+        $persistedVersions = array();
         foreach ($package->getVersions() as $version) {
             $this->persistVersion($version);
+            $persistedVersions[] = $version->getId();
         }
+
+        // Remove all versions that were not persisted:
+		$sql = "DELETE FROM " . $this->getTablePrefix() . "version WHERE package_id = ? AND id NOT IN (" . implode(', ', $persistedVersions) . ")";
+		$stmt = $this->pdo->prepare($sql);
+		$stmt->execute(array($package->getId()));
     }
 
 	public function persistVendor(Vendor $vendor)

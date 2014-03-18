@@ -14,6 +14,29 @@ use PixelPolishers\Resolver\Entity\Version;
 
 class GitHubImporter implements ImporterInterface
 {
+    private $clientId;
+    private $clientSecret;
+
+    public function getClientId()
+    {
+        return $this->clientId;
+    }
+
+    public function setClientId($clientId)
+    {
+        $this->clientId = $clientId;
+    }
+
+    public function getClientSecret()
+    {
+        return $this->clientSecret;
+    }
+
+    public function setClientSecret($clientSecret)
+    {
+        $this->clientSecret = $clientSecret;
+    }
+
     public function import($url, Package $package = null)
     {
         $repositoryName = $this->getRepositoryName($url);
@@ -90,9 +113,35 @@ class GitHubImporter implements ImporterInterface
         return $version;
     }
 
+    private function getRepositoryName($url)
+    {
+        $urlInfo = parse_url($url);
+
+        $parts = explode('/', $urlInfo['path']);
+
+        return $parts[1] . '/' . $parts[2];
+    }
+
     private function getHttpContent($url)
     {
         $ch = curl_init();
+
+        if ($this->getClientId() && $this->getClientSecret()) {
+            $info = parse_url($url);
+
+            if (array_key_exists('query', $info)) {
+                $info['query'] .= '&client_id=' . $this->getClientId()
+                        . '&client_secret=' . $this->getClientSecret();
+            } else {
+                $info['query'] = 'client_id=' . $this->getClientId()
+                        . '&client_secret=' . $this->getClientSecret();
+            }
+
+            $url = $info['scheme'] . '://'
+                    . $info['host']
+                    . $info['path'] . '?'
+                    . $info['query'];
+        }
 
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -109,15 +158,6 @@ class GitHubImporter implements ImporterInterface
         }
 
         return $json;
-    }
-
-    private function getRepositoryName($url)
-    {
-        $urlInfo = parse_url($url);
-
-        $parts = explode('/', $urlInfo['path']);
-
-        return $parts[1] . '/' . $parts[2];
     }
 
     private function getRepositoryJson($repositoryName)
