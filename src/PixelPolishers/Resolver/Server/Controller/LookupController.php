@@ -53,15 +53,20 @@ class LookupController extends AbstractController
             $package = $version->getPackage();
 
             $data['status'] = 200;
-            $data['version'] = $version->getVersion()->toString();
+            $data['version'] = (string)$version->getVersion();
             $data['source'] = array(
-                'type' => $version->getReferenceType(),
-                'url' => $version->getReferenceUrl(),
-                'reference' => $version->getReference(),
+                'name' => $version->getReferenceName(),
+                'hash' => $version->getReferenceHash(),
             );
             $data['package'] = array(
+                'vendor' => $package->getVendor()->getName(),
+                'name' => $package->getName(),
                 'fullname' => $package->getFullname(),
                 'description' => $package->getDescription(),
+                'repository' => array(
+                    'url' => $package->getRepositoryUrl(),
+                    'type' => $package->getRepositoryType(),
+                ),
             );
 
             $data['dependencies'] = array();
@@ -85,8 +90,8 @@ class LookupController extends AbstractController
 
         // Sort the versions from high to low:
         usort($versions, function($lft, $rgt) {
-            $semVer1 = $lft->getVersion()->getNormalVersion();
-            $semVer2 = $rgt->getVersion()->getNormalVersion();
+            $semVer1 = $lft->getVersion();
+            $semVer2 = $rgt->getVersion();
 
             return version_compare($semVer1, $semVer2, '<');
         });
