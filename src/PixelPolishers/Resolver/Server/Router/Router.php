@@ -31,6 +31,16 @@ class Router implements RouterInterface
     }
 
     /**
+     * Gets the controller map.
+     *
+     * @return array
+     */
+    public function getControllers()
+    {
+        return $this->controllerMap;
+    }
+
+    /**
      * Sets the controller.
      *
      * @param string $url The url to set.
@@ -52,7 +62,7 @@ class Router implements RouterInterface
         if (!array_key_exists($url, $this->controllerMap)) {
             return null;
         }
-        
+
         return $this->controllerMap[$url];
     }
 }

@@ -13,14 +13,20 @@ class ResolverController extends AbstractController
     public function execute()
     {
         $result = array();
-
         $result['packages'] = array();
-        $result['api'] = array(
-            'lookup' => $this->getServer()->getRouter()->getLookupUrl(),
-            'search' => $this->getServer()->getRouter()->getSearchUrl(),
-            'resolver' => $this->getServer()->getRouter()->getResolverUrl(),
-        );
+        $result['api'] = array();
 
+        $router = $this->getServer()->getRouter();
+        foreach ($router->getControllers() as $url => $controller) {
+            $class = get_class($controller);
+
+            $index = strrpos($class, '\\') + 1;
+
+            $classPart = substr($class, $index, -strlen('Controller'));
+
+            $result['api'][strtolower($classPart)] = $url;
+        }
+        
         return $result;
     }
 }

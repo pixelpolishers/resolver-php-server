@@ -16,6 +16,13 @@ use PixelPolishers\Resolver\Server\Controller\ControllerInterface;
 interface RouterInterface
 {
     /**
+     * Gets the controller map.
+     *
+     * @return array
+     */
+    public function getControllers();
+    
+    /**
      * Finds the controller for the given url.
      *
      * @param string $url The url to parse.
