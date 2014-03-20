@@ -112,7 +112,7 @@ class LookupController extends AbstractController
     private function lookupDirectVersion($versions, $pckVersion)
     {
         foreach ($versions as $version) {
-            if ($version->getVersion()->getNormalVersion() == $pckVersion) {
+            if ($version->getVersion() == $pckVersion) {
                 return $version;
             }
         }
