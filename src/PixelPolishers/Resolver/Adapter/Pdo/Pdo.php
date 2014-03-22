@@ -132,6 +132,22 @@ class Pdo implements AdapterInterface
 
 		return $this->buildUpPackage($obj);
     }
+	
+    public function findPackageByVendor(Vendor $vendor)
+	{
+        $sql = "SELECT p.*
+                FROM " . $this->getTablePrefix() . "package AS p
+                WHERE p.vendor_id = :vendor";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(array('vendor' => $vendor->getId()));
+		
+        $result = array();
+        foreach ($stmt->fetchAll(\PDO::FETCH_CLASS) as $row) {
+            $result[] = $this->buildUpPackage($row);
+        }
+        return $result;
+	}
 
     public function findVendorById($id)
     {

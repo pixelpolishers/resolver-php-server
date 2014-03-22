@@ -18,6 +18,7 @@ interface AdapterInterface
 
 	public function findPackageById($id);
     public function findPackageByFullname($fullName);
+    public function findPackageByVendor(Vendor $vendor);
 
 	public function findVendorById($id);
 	public function findVendorByName($name);
