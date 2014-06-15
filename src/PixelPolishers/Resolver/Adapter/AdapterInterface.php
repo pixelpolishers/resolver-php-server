@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Resolver. An application created by Pixel Polishers.
  *
@@ -16,24 +17,33 @@ interface AdapterInterface
 {
     public function findDependencies($versionId);
 
-	public function findPackageById($id);
+    public function findPackageById($id);
+
     public function findPackageByFullname($fullName);
+
     public function findPackageByVendor(Vendor $vendor);
 
-	public function findVendorById($id);
-	public function findVendorByName($name);
+    public function findVendorById($id);
+
+    public function findVendorByName($name);
 
     public function findVersionById($id);
+
     public function findVersions($packageFullName);
-	public function findVersionsByPackageId($id);
+
+    public function findVersionsByPackageId($id);
 
     public function searchPackages($query);
 
     public function persistPackage(Package $package);
-	public function persistVersion(Version $version);
-	public function persistVendor(Vendor $vendor);
 
-	public function removePackage(Package $package);
-	public function removeVersion(Version $version);
-	public function removeVendor(Vendor $vendor);
+    public function persistVersion(Version $version);
+
+    public function persistVendor(Vendor $vendor);
+
+    public function removePackage(Package $package);
+
+    public function removeVersion(Version $version);
+
+    public function removeVendor(Vendor $vendor);
 }

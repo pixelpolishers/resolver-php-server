@@ -12,5 +12,7 @@ use PixelPolishers\Resolver\Entity\Package;
 
 interface ImporterInterface
 {
-    public function import($url, Package $package = null);
+    public function setUser($user);
+    
+    public function import($url);
 }

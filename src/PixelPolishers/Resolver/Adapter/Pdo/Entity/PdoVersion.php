@@ -15,11 +15,13 @@ class PdoVersion extends Version
 {
     private $pdo;
     private $packageId;
+    private $syncedDependencies;
 
     public function __construct(Pdo $pdo)
     {
         parent::__construct();
         $this->pdo = $pdo;
+        $this->syncedDependencies = false;
     }
 
     public function getPackageId()
@@ -48,7 +50,8 @@ class PdoVersion extends Version
     {
         $result = parent::getDependencies();
 
-        if (count($result) == 0) {
+        if (!$this->syncedDependencies) {
+            $this->syncedDependencies = true;
             $result = $this->pdo->findDependencies($this->getId());
             $this->setDependencies($result);
         }

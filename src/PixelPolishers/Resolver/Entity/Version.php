@@ -117,17 +117,33 @@ class Version
     
     public function addDependency(PackageLink $package)
     {
+        $package->setVersion($this);
+        
         $this->dependencies[] = $package;
+    }
+    
+    public function clearDependencies()
+    {
+        $this->dependencies = array();
     }
 
     public function getDependencies()
     {
         return $this->dependencies;
     }
+    
+    public function removeDependency(PackageLink $package)
+    {
+        foreach ($this->dependencies as $k => $dependency) {
+            if ($dependency === $package) {
+                unset($this->dependencies[$k]);
+            }
+        }
+    }
 
     public function setDependencies($requiredPackages)
     {
-        $this->dependencies = array();
+        $this->clearDependencies();
         foreach ($requiredPackages as $requiredPackage) {
             $this->addDependency($requiredPackage);
         }

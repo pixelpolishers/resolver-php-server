@@ -8,14 +8,25 @@
 
 namespace PixelPolishers\Resolver\Importer;
 
+use PixelPolishers\Resolver\Adapter\AdapterInterface;
 use PixelPolishers\Resolver\Entity\Package;
+use PixelPolishers\Resolver\Entity\PackageLink;
 use PixelPolishers\Resolver\Entity\Vendor;
 use PixelPolishers\Resolver\Entity\Version;
 
-class GitHubImporter implements ImporterInterface
+class GitHubImporter extends AbstractImporter
 {
     private $clientId;
     private $clientSecret;
+    private $verifySsl;
+    private $user;
+    
+    public function __construct(AdapterInterface $adapter)
+    {
+        parent::__construct($adapter);
+        
+        $this->verifySsl = true;
+    }
 
     public function getClientId()
     {
@@ -36,19 +47,52 @@ class GitHubImporter implements ImporterInterface
     {
         $this->clientSecret = $clientSecret;
     }
+    
+    public function getVerifySsl()
+    {
+        return $this->verifySsl;
+    }
 
-    public function import($url, Package $package = null)
+    public function setVerifySsl($verifySsl)
+    {
+        $this->verifySsl = $verifySsl;
+    }
+    
+    public function setUser($user)
+    {
+        $this->user = $user;
+    }
+    
+    public function import($url)
     {
         $repositoryName = $this->getRepositoryName($url);
         $repositoryJson = $this->getRepositoryJson($repositoryName);
 
         // Create the package:
         $packageJson = $this->getResolverJson($repositoryName, $repositoryJson->default_branch);
-        $package = $this->parsePackageJson($packageJson, $package);
-        $package->setRepositoryType('github');
-        $package->setRepositoryUrl($url);
+        $newPackage = $this->parsePackageJson($packageJson);
+        $newPackage->setRepositoryType('github');
+        $newPackage->setRepositoryUrl($url);
 
-        // Create the versions for each branch:
+        // Create the versions for each branch and tag:
+        $this->parseBranches($newPackage, $repositoryName, $repositoryJson, $packageJson);
+        $this->parseTags($newPackage, $repositoryName, $repositoryJson, $packageJson);
+        
+        // Try to find an existing package:
+        $oldPackage = $this->getAdapter()->findPackageByFullname($newPackage->getFullname());
+        if ($oldPackage !== null) {
+            $this->mergePackages($oldPackage, $newPackage);
+            $package = $oldPackage;
+        } else {
+            $package = $newPackage;
+        }
+        
+        // And save the package:
+        $this->getAdapter()->persistPackage($package);
+    }
+    
+    private function parseBranches(Package $package, $repositoryName, $repositoryJson, $packageJson)
+    {
         $branchesJson = $this->getBranchesJson($repositoryName);
         foreach ($branchesJson as $branchJson) {
             if ($branchJson->name === $repositoryJson->default_branch) {
@@ -61,7 +105,10 @@ class GitHubImporter implements ImporterInterface
             $version->setPackage($package);
             $version->setVersion('dev-' . $branchJson->name);
         }
-
+    }
+    
+    private function parseTags(Package $package, $repositoryName, $repositoryJson, $packageJson)
+    {
         $tagsJson = $this->getTagsJson($repositoryName);
         foreach ($tagsJson as $tagJson) {
             $tagResolverJson = $this->getResolverJson($repositoryName, $tagJson->name);
@@ -73,9 +120,9 @@ class GitHubImporter implements ImporterInterface
         return $package;
     }
 
-    private function parsePackageJson($json, Package $package = null)
+    private function parsePackageJson($json)
     {
-        $package = $package == null ? new Package() : $package;
+        $package = new Package();
         $package->setCreatedAt(new \DateTime());
         $package->setUpdatedAt(new \DateTime());
 
@@ -109,8 +156,31 @@ class GitHubImporter implements ImporterInterface
         if (isset($resolverJson->license)) {
             $version->setLicense($resolverJson->license);
         }
+        
+        if (isset($resolverJson->projects) && is_array($resolverJson->projects)) {
+            foreach ($resolverJson->projects as $project) {
+                if (isset($project->dependencies) && is_array($project->dependencies)) {
+                    $this->parseProjectDependencies($version, $project->dependencies);
+                }
+            }
+        }
 
         return $version;
+    }
+    
+    private function parseProjectDependencies(Version $version, array $dependencies)
+    {
+        foreach ($dependencies as $dependency) {
+            $packageVersion = $dependencyVersion = $this->findDependency($dependency->name, $dependency->version);
+            if (!$packageVersion) {
+                throw new \Exception('The dependency "' . $dependency->name . '" does not exist.');
+            }
+            
+            $packageLink = new PackageLink();
+            $packageLink->setVersion($version);
+            $packageLink->setPackageVersion($packageVersion);
+            $version->addDependency($packageLink);
+        }
     }
 
     private function getRepositoryName($url)
@@ -145,11 +215,21 @@ class GitHubImporter implements ImporterInterface
 
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->getVerifySsl());
         curl_setopt($ch, CURLOPT_USERAGENT, 'pixelpolishers.com');
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Accept: application/vnd.github.3.raw'
         ));
+        
         $output = curl_exec($ch);
+        if (!$output) {
+            $error = curl_error($ch);
+            $errno = curl_errno($ch);
+            curl_close($ch);
+            
+            throw new \RuntimeException($error, $errno);
+        }
+        
         curl_close($ch);
 
         $json = json_decode($output);
