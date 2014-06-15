@@ -89,6 +89,8 @@ class GitHubImporter extends AbstractImporter
         
         // And save the package:
         $this->getAdapter()->persistPackage($package);
+        
+        return $package;
     }
     
     private function parseBranches(Package $package, $repositoryName, $repositoryJson, $packageJson)

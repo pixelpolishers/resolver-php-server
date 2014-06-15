@@ -62,10 +62,10 @@ abstract class AbstractImporter implements ImporterInterface
         foreach ($oldVersion->getDependencies() as $dependency) {
             
             $newDependency = null;
-            foreach ($newVersion->getDependencies() as $newDep) {
-                if ($newDep->getPackageVersion()->getId() == 
+            foreach ($newVersion->getDependencies() as $tmpDep) {
+                if ($tmpDep->getPackageVersion()->getId() == 
                     $dependency->getPackageVersion()->getId()) {
-                    $newDependency = $newDep;
+                    $newDependency = $tmpDep;
                     break;
                 }
             }
@@ -77,7 +77,19 @@ abstract class AbstractImporter implements ImporterInterface
 
         // Add the new versions:
         foreach ($newVersion->getDependencies() as $dependency) {
-            $oldVersion->addDependency($dependency);
+            
+            $oldDependency = null;
+            foreach ($oldVersion->getDependencies() as $tmpDep) {
+                if ($tmpDep->getPackageVersion()->getId() == 
+                    $dependency->getPackageVersion()->getId()) {
+                    $oldDependency = $tmpDep;
+                    break;
+                }
+            }
+            
+            if (!$oldDependency) {
+                $oldVersion->addDependency($dependency);
+            }
         }
     }
     
