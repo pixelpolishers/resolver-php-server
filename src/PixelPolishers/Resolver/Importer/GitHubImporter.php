@@ -73,6 +73,10 @@ class GitHubImporter extends AbstractImporter
         $newPackage = $this->parsePackageJson($packageJson);
         $newPackage->setRepositoryType('github');
         $newPackage->setRepositoryUrl($url);
+        
+        if ($this->user) {
+            $newPackage->setUserId($this->user);
+        }
 
         // Create the versions for each branch and tag:
         $this->parseBranches($newPackage, $repositoryName, $repositoryJson, $packageJson);
