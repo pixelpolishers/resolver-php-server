@@ -19,7 +19,6 @@ class GitHubImporter extends AbstractImporter
     private $clientId;
     private $clientSecret;
     private $verifySsl;
-    private $user;
     
     public function __construct(AdapterInterface $adapter)
     {
@@ -58,11 +57,6 @@ class GitHubImporter extends AbstractImporter
         $this->verifySsl = $verifySsl;
     }
     
-    public function setUser($user)
-    {
-        $this->user = $user;
-    }
-    
     public function import($url)
     {
         $repositoryName = $this->getRepositoryName($url);
@@ -74,8 +68,8 @@ class GitHubImporter extends AbstractImporter
         $newPackage->setRepositoryType('github');
         $newPackage->setRepositoryUrl($url);
         
-        if ($this->user) {
-            $newPackage->setUserId($this->user);
+        if ($this->getUser()) {
+            $newPackage->setUserId($this->getUser());
         }
 
         // Create the versions for each branch and tag:

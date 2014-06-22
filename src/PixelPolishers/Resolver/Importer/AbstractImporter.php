@@ -19,6 +19,8 @@ abstract class AbstractImporter implements ImporterInterface
      */
     private $adapter;
     
+    private $user;
+    
     public function __construct(AdapterInterface $adapter)
     {
         $this->adapter = $adapter;
@@ -27,6 +29,16 @@ abstract class AbstractImporter implements ImporterInterface
     protected function getAdapter()
     {
         return $this->adapter;
+    }
+    
+    public function getUser()
+    {
+        return $this->user;
+    }
+    
+    public function setUser($user)
+    {
+        $this->user = $user;
     }
     
     protected function mergePackages(Package $oldPackage, Package $newPackage)
